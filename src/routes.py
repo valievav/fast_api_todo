@@ -1,25 +1,14 @@
-from fastapi import FastAPI, HTTPException
-from models import Todo, TodoCreate, TodoUpdate
 from typing import List
 
+from fastapi import APIRouter, HTTPException
 
-app = FastAPI()
+from .data import all_todos
+from .schemas import Todo, TodoCreate, TodoUpdate
 
-all_todos = [
-    Todo(id=1, description='Go outside', priority=1),
-    Todo(id=2, description='Study for fun', priority=1),
-    Todo(id=3, description='Watch "Wheel of Time"', priority=3),
-    Todo(id=4, description='Go to the gym', priority=2),
-    Todo(id=5, description='Hope for the best', priority=1),
-]
+todo_router = APIRouter()
 
 
-@app.get('/', response_model=dict)
-async def root():
-    return {'message': 'Welcome to Todo list application!'}
-
-
-@app.get('/todos', response_model=List[Todo])
+@todo_router.get('/todos', response_model=List[Todo])
 async def get_todos():
     """
     Return all existing todo entries
@@ -27,7 +16,7 @@ async def get_todos():
     return all_todos
 
 
-@app.get('/todos/{todo_id}', response_model=Todo)
+@todo_router.get('/todos/{todo_id}', response_model=Todo)
 async def get_todo_item(todo_id: int):
     """
     Return todo entry by id
@@ -38,7 +27,7 @@ async def get_todo_item(todo_id: int):
     return HTTPException(status_code=404, detail='Item not found')
 
 
-@app.post('/todos', response_model=Todo)
+@todo_router.post('/todos', response_model=Todo)
 async def create_todo_item(todo: TodoCreate):  # connect to pydantic validation
     """
     Create a todo entry
@@ -49,7 +38,7 @@ async def create_todo_item(todo: TodoCreate):  # connect to pydantic validation
     return new_todo
 
 
-@app.put('/todos/{todo_id}', response_model=Todo)
+@todo_router.put('/todos/{todo_id}', response_model=Todo)
 async def update_todo_item(todo_id: int, todo: TodoUpdate):
     """
     Update todo entry (overwrite with new data)
@@ -62,7 +51,7 @@ async def update_todo_item(todo_id: int, todo: TodoUpdate):
     return HTTPException(status_code=404, detail='Item not found')
 
 
-@app.delete('/todos/{todo_id}', response_model=dict)
+@todo_router.delete('/todos/{todo_id}', response_model=dict)
 async def delete_todo_item(todo_id: int):
     """
     Delete todo entry
