@@ -1,34 +1,34 @@
 from typing import List
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 
-from .data import all_todos
+from .data import get_all_todos
 from .schemas import Todo, TodoCreate, TodoUpdate
 
 todo_router = APIRouter()
 
 
-@todo_router.get('/todos', response_model=List[Todo])
-async def get_todos():
+@todo_router.get('/', response_model=List[Todo])
+async def get_todos(all_todos=Depends(get_all_todos)):
     """
     Return all existing todo entries
     """
     return all_todos
 
 
-@todo_router.get('/todos/{todo_id}', response_model=Todo)
-async def get_todo_item(todo_id: int):
+@todo_router.get('/{todo_id}', response_model=Todo)
+async def get_todo_item(todo_id: int, all_todos=Depends(get_all_todos)):
     """
     Return todo entry by id
     """
     for item in all_todos:
         if item.id == todo_id:
             return item
-    return HTTPException(status_code=404, detail='Item not found')
+    raise HTTPException(status_code=404, detail='Item not found')
 
 
-@todo_router.post('/todos', response_model=Todo)
-async def create_todo_item(todo: TodoCreate):  # connect to pydantic validation
+@todo_router.post('/', response_model=Todo)
+async def create_todo_item(todo: TodoCreate, all_todos=Depends(get_all_todos)):  # connect to pydantic validation
     """
     Create a todo entry
     """
@@ -38,8 +38,8 @@ async def create_todo_item(todo: TodoCreate):  # connect to pydantic validation
     return new_todo
 
 
-@todo_router.put('/todos/{todo_id}', response_model=Todo)
-async def update_todo_item(todo_id: int, todo: TodoUpdate):
+@todo_router.put('/{todo_id}', response_model=Todo)
+async def update_todo_item(todo_id: int, todo: TodoUpdate, all_todos=Depends(get_all_todos)):
     """
     Update todo entry (overwrite with new data)
     """
@@ -48,11 +48,11 @@ async def update_todo_item(todo_id: int, todo: TodoUpdate):
             item.description = (todo.description or item.description)
             item.priority = (todo.priority or item.priority)
             return item
-    return HTTPException(status_code=404, detail='Item not found')
+    raise HTTPException(status_code=404, detail='Item not found')
 
 
-@todo_router.delete('/todos/{todo_id}', response_model=dict)
-async def delete_todo_item(todo_id: int):
+@todo_router.delete('/{todo_id}', response_model=dict)
+async def delete_todo_item(todo_id: int, all_todos=Depends(get_all_todos)):
     """
     Delete todo entry
     """
@@ -60,4 +60,4 @@ async def delete_todo_item(todo_id: int):
         if item.id == todo_id:
             all_todos.remove(item)
             return {'message': f'Item with id {todo_id} is removed'}
-    return HTTPException(status_code=404, detail='Item not found')
+    raise HTTPException(status_code=404, detail='Item not found')
