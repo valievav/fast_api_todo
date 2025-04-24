@@ -7,7 +7,7 @@ from src import base_url
 def test_get_todos(test_client, test_data):
     response = test_client.get(f'{base_url}')
     response_data = response.json()
-    expected_data = [todo.dict() for todo in test_data]
+    expected_data = [todo.model_dump() for todo in test_data]
 
     assert response.status_code == status.HTTP_200_OK
     assert len(response_data) == len(test_data)
@@ -18,7 +18,7 @@ def test_get_todo_item(test_client, test_data):
     response = test_client.get(f'{base_url}/1')
 
     assert response.status_code == status.HTTP_200_OK
-    assert response.json() == test_data[0].dict()
+    assert response.json() == test_data[0].model_dump()
 
 
 def test_get_todo_item_nonexistent_id(test_client, test_data):
@@ -58,6 +58,7 @@ def test_create_todo_item_invalid_payload(test_client, test_todo_item_payload):
 ])
 def test_update_todo_item_update_one_field(test_client, update_data, expected_response):
     response = test_client.put(f'{base_url}/1', json=update_data)
+
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == expected_response
 
