@@ -13,8 +13,4 @@ class Settings(BaseSettings):
     )
 
 
-import os
-print("ENV FILE FOUND?", os.path.isfile(".env"))
-print("DATABASE_URL", os.getenv("DATABASE_URL"))
-
 Config = Settings()

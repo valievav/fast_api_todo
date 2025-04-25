@@ -1,3 +1,4 @@
+import os
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
@@ -19,8 +20,12 @@ async def create_connection():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await create_connection()
-    yield
+    # do not create connection to main db IF running in test environment
+    if os.getenv("IS_TEST_ENV", '0') == '1':
+        yield
+    else:
+        await create_connection()
+        yield
 
 
 async def get_session() -> AsyncGenerator[AsyncSession, None]:
